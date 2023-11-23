@@ -3,9 +3,8 @@ import re
 
 class solver:
 
-    def __init__(self, og_list, common_word_score):
-        self.og_list = og_list
-        self.common_word_score = common_word_score
+    def __init__(self):
+        pass
 
 
     def score_words(self, word_list, common_word_score, round):
@@ -89,9 +88,14 @@ class solver:
             for j in green_index:
                 green_letters.append(old_list[word][j])
 
-            for w in x_index:
-                if ((guess[w] in old_list[word]) and (guess[w] not in(green_letters))):
+            #for situations where a letter is in the word
+            #but they guessed that letter too many times
+            yellow_letters = []
+            for j in yellow_index:
+                yellow_letters.append(guess[j])
 
+            for w in x_index:
+                if ((guess[w] in old_list[word]) and (guess[w] not in(green_letters)) and (guess[w] not in(yellow_letters))):
                     x_good = False
                     break
 
@@ -113,8 +117,76 @@ class solver:
                         yellows_good = False
                         break
             
-            if (x_good and greens_good and yellows_good):
+            if (x_good and greens_good and yellows_good and (guess != old_list[word])):
                 new_list.append(old_list[word])
 
 
         return new_list
+    
+    def determine_xyg(self, guess, true):
+    
+        right = ['x'] * 5
+
+        #need to count the amount of times
+        #each letter will be marked 'y' or 'g'
+        #as well as the maximum number of yellows allowed for each letter
+        yellow_count = {}
+        green_count = {}
+        for i in true:
+            yellow_count[i] = 0
+            green_count[i] = 0
+
+        for i in range(len(guess)):
+            #if the letter is in the right place
+            if guess[i] == true[i]:
+                right[i] = 'g'
+                green_count[guess[i]] += 1
+
+            #if the letter is in the word, but in the wrong index
+            if ((guess[i] in true) and (guess[i] != true[i])):
+                right[i] = 'y'
+                yellow_count[guess[i]] += 1
+
+        #figuring out the maximum amount of yellows that each
+        #letter could be allocated
+        max_yellows = {}
+        for i in range(len(guess)):
+            max_yellows[guess[i]] = true.count(guess[i])
+            if (guess[i] in green_count):
+                max_yellows[guess[i]] -= green_count[guess[i]]
+
+        #yellow edits
+        for i in range(len(right)):
+
+            if right[i] == "y":
+
+            
+                #to account for when a guess has more of a letter than
+                #the true word
+                #ie guess: "green", true: "field"
+                if (yellow_count[guess[i]] > max_yellows[guess[i]]):
+
+                    #if the extra 'y's should be a 'g'
+                    if (green_count[guess[i]] >= yellow_count[guess[i]]):
+                        for j in range(len(guess)):
+                            if ((right[j] != 'g') and (guess[i] == guess[j])):
+                                right[j] = 'x'
+                                yellow_count[guess[i]] -= 1
+
+                    #if that wasn't the issue, there are too many yellows
+                    #and greens can't account for the excess
+                    if (yellow_count[guess[i]] > max_yellows[guess[i]]):
+                        for l in range(0, (yellow_count[guess[i]] - max_yellows[guess[i]])):
+                            #changing the last appearing repeated yellow to an x
+
+                            backwards_guess = guess[::-1]
+                            backwards_right = right[::-1]
+
+                            for x in range(len(backwards_guess)):
+                                if ((backwards_guess[x] == guess[i]) and (backwards_right[x] == "y")):
+                                    backwards_right[x] = "x"
+                                    right = backwards_right[::-1]
+                                    break
+
+        right = ''.join(right)
+        return right

@@ -27,6 +27,79 @@ def score_common_words(common_word_list):
 
     return score_dict_common
 
+def look_ahead(curr_word_list, common_words_score, round):
+
+    total_scores = {}
+    for i in curr_word_list:
+        total_scores[i] = 0
+
+    #print(len(curr_word_list))
+    # #for this we need to iterate through every word in the word list
+    for i in range(len(curr_word_list)):
+        print('**************************')
+        print("Trying word ", i+1)
+        print('**************************')
+        
+
+        #assuming every word could be the correct answer
+        true_answer = curr_word_list[i]
+        # print("++++++++++++++++++++++++")
+        # print("TRUE: ",  true_answer)
+        # print("++++++++++++++++++++++++")
+
+        #going through the whole word list, seeing
+        #how many guesses it would take to reach the 
+        #"true" answer giving our methodology
+        for j in range(len(curr_word_list)):
+            print("Combo ", j + 1)
+            new_solver = solver()
+            num_guesses = 1
+
+
+            #seeing what would happen if we choose the current word
+            #as our guess
+
+            #how likely is it that we'd be successful
+            guess = curr_word_list[j]
+            #print("First guess", guess)
+            og_list = curr_word_list
+
+            while (guess != true_answer and num_guesses < 10):
+                # print("------------------------------------")
+                # print("Num guess", num_guesses)
+                # print("------------------------------------")
+
+                right = new_solver.determine_xyg(guess=guess, true=true_answer)
+                # print("right: ", right)
+            
+
+                #parsing down the list based on previous guess, getting new best scores
+                #print("Length old list", len(og_list))
+                new_list = new_solver.adjust_list(og_list, guess, right)
+                #print("Length new list", len(new_list))
+                best_words, best_scores = new_solver.score_words(new_list, common_words_score, round + num_guesses)
+                #getting the best guess using the heuristic
+                guess = best_words[0]
+                #print("New guess: ", guess)
+
+                og_list = new_list
+
+                num_guesses += 1
+
+
+            total_scores[curr_word_list[j]] += num_guesses
+            # print("***********************************")
+            # print(curr_word_list[j], ": total score, ", total_scores[curr_word_list[j]])
+            # print("***********************************")
+
+    df = pd.DataFrame(data={"Word": total_scores.keys(), "Score": total_scores.values()})
+
+    #everything that has 0 guesses is no longer in the list
+    df = df[df["Score"] > 0]
+    df_head = df.sort_values(by="Score").head()
+
+    return df_head["Word"].to_numpy(), df_head["Score"].to_numpy()
+
 
 def contains_only_gyx(input_string):
     # Define the regular expression pattern
@@ -41,7 +114,6 @@ def contains_only_gyx(input_string):
 
 def main():
 
-    
     print("\nRound 1: ")
     
     #reading the words, scoring words by commonality
@@ -49,18 +121,12 @@ def main():
     common_words_score = score_common_words(common_words)
 
     #calling our solver
-    solve_puzzle = solver(og_list, common_words_score)
+    solve_puzzle = solver()
 
     full_list = og_list
     print("Possible choices: " , len(og_list))
-    print("Here are some starter words:")
-    #starter_words(og_list, common_words_score)
-
-    #printing out some starter words
-    best_words, best_scores = solve_puzzle.score_words(og_list, common_words_score, 0)
-    for i in range(len(best_words)):
-            print(best_words[i], " : ", best_scores[i])
-
+    print("Here are the top 5 starter words:")
+    print("irate terai tiare retia raine")
 
     trys = 1
     win = ""
@@ -103,16 +169,20 @@ def main():
             if (not(len(right)==5) or not(contains_only_gyx(right))):
                 print("Make sure you only type in 5 characters of g,y, or x")
 
+
         new_list = solve_puzzle.adjust_list(og_list, guess, right)
+        
         print("--------------")
         print("Round ", trys + 1, ": ")
         print("New possible choices: ", len(new_list))
+        print("Thinking of new words .....")
+        words, scores = look_ahead(new_list, common_words_score, trys)
 
-        best_words, best_scores = solve_puzzle.score_words(new_list, common_words_score, trys)
-    
+        
+        
         print("Here are new words to try: \n")
-        for i in range(len(best_words)):
-            print(best_words[i], " : ", best_scores[i])
+        for i in range(len(words)):
+            print(words[i], " : ", scores[i])
 
         og_list = new_list
         trys += 1
