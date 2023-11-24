@@ -34,7 +34,7 @@ def read_words():
 
 def write_len5_words(words):
     
-    f = open("words_len5.txt", "w")
+    f = open("common_5letter_words.txt", "w")
 
     for i in words:
         f.write(i + "\n")

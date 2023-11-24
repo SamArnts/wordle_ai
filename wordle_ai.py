@@ -13,7 +13,7 @@ def read_words():
 
     common_words = []
 
-    f2 = open("words_len5.txt", "r")
+    f2 = open("common_5letter_words.txt", "r")
     for y in f2:
         common_words.append(y.replace("\n", ""))
     return word_list, common_words
@@ -56,7 +56,7 @@ def look_ahead(curr_word_list, common_words_score, round):
     else:
         word_list = curr_word_list
 
-        
+
     print("Trying ", len(word_list), " combinations...")
     # #for this we need to iterate through every word in the word list
     for i in range(len(word_list)):
