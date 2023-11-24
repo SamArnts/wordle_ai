@@ -38,12 +38,25 @@ def look_ahead(curr_word_list, common_words_score, round):
     word_list = []
 
     #if the current word list is too big it will take a long time
-    #will choose randomly 
+    #will choose the most common words to increase our chances
     if (len(curr_word_list) > 200):
-        word_list = random.choices(curr_word_list, k=200)
+        remaining_common_words = {}
+        for i in curr_word_list:
+            if i in common_words_score:
+                remaining_common_words[i] = common_words_score[i]
+            else:
+                remaining_common_words[i] = 0
+
+        new_common_df = pd.DataFrame(data={"Word": remaining_common_words.keys(), 
+                                        "Score": remaining_common_words.values()}).sort_values(by="Score", ascending=False)
+        
+
+        word_list = new_common_df["Word"].to_numpy()[0:200]
         
     else:
         word_list = curr_word_list
+
+        
     print("Trying ", len(word_list), " combinations...")
     # #for this we need to iterate through every word in the word list
     for i in range(len(word_list)):
