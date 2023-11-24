@@ -1,7 +1,9 @@
 
 import pandas as pd
 import re
+import random
 from solver_class import solver
+
 
 def read_words():
     word_list = []
@@ -33,16 +35,25 @@ def look_ahead(curr_word_list, common_words_score, round):
     for i in curr_word_list:
         total_scores[i] = 0
 
-    #print(len(curr_word_list))
+    word_list = []
+
+    #if the current word list is too big it will take a long time
+    #will choose randomly 
+    if (len(curr_word_list) > 200):
+        word_list = random.choices(curr_word_list, k=200)
+        
+    else:
+        word_list = curr_word_list
+    print("Trying ", len(word_list), " combinations...")
     # #for this we need to iterate through every word in the word list
-    for i in range(len(curr_word_list)):
+    for i in range(len(word_list)):
         print('**************************')
         print("Trying word ", i+1)
         print('**************************')
         
 
         #assuming every word could be the correct answer
-        true_answer = curr_word_list[i]
+        true_answer = word_list[i]
         # print("++++++++++++++++++++++++")
         # print("TRUE: ",  true_answer)
         # print("++++++++++++++++++++++++")
@@ -50,8 +61,9 @@ def look_ahead(curr_word_list, common_words_score, round):
         #going through the whole word list, seeing
         #how many guesses it would take to reach the 
         #"true" answer giving our methodology
-        for j in range(len(curr_word_list)):
-            print("Combo ", j + 1)
+        for j in range(len(word_list)):
+            # if ((j + 1) % 10 == 0):
+            #     print("Combo ", j + 1)
             new_solver = solver()
             num_guesses = 1
 
@@ -60,11 +72,11 @@ def look_ahead(curr_word_list, common_words_score, round):
             #as our guess
 
             #how likely is it that we'd be successful
-            guess = curr_word_list[j]
+            guess = word_list[j]
             #print("First guess", guess)
-            og_list = curr_word_list
+            og_list = word_list
 
-            while (guess != true_answer and num_guesses < 10):
+            while (guess != true_answer):
                 # print("------------------------------------")
                 # print("Num guess", num_guesses)
                 # print("------------------------------------")
@@ -87,7 +99,7 @@ def look_ahead(curr_word_list, common_words_score, round):
                 num_guesses += 1
 
 
-            total_scores[curr_word_list[j]] += num_guesses
+            total_scores[word_list[j]] += num_guesses
             # print("***********************************")
             # print(curr_word_list[j], ": total score, ", total_scores[curr_word_list[j]])
             # print("***********************************")
