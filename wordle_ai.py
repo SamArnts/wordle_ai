@@ -19,7 +19,7 @@ def read_words():
     return word_list, common_words
 
     
-
+#returns a dictionary of words scored by their commonality
 def score_common_words(common_word_list):
 
     score_dict_common = {}
@@ -29,6 +29,8 @@ def score_common_words(common_word_list):
 
     return score_dict_common
 
+#the function that looks ahead at what could happen given different 
+#combinations of educated guesses
 def look_ahead(curr_word_list, common_words_score, round):
 
     total_scores = {}
@@ -136,6 +138,22 @@ def contains_only_gyx(input_string):
     # If there is a match, the string contains only 'g', 'y', and 'x'
     return bool(match)               
     
+#break score rankings by commonality
+def tie_breaker(words, common_words_score):
+
+    remaining_common_words = {}
+    for i in words:
+        if i in common_words_score:
+            remaining_common_words[i] = common_words_score[i]
+        else:
+            remaining_common_words[i] = 0
+    
+    df = pd.DataFrame(data={"Word": remaining_common_words.keys(), "Score": remaining_common_words.values()})
+
+    df = df.sort_values(by="Score", ascending=False)
+
+    return df["Word"].to_numpy()
+
 
 def main():
 
@@ -203,11 +221,12 @@ def main():
         print("Thinking of new words .....")
         words, scores = look_ahead(new_list, common_words_score, trys)
 
-        
+        #score tie breakers
+        words = tie_breaker(words, common_words_score)
         
         print("Here are new words to try: \n")
         for i in range(len(words)):
-            print(words[i], " : ", scores[i])
+            print((i+1), ". ", words[i], " : ", scores[i])
 
         og_list = new_list
         trys += 1
