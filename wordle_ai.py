@@ -1,7 +1,6 @@
 
 import pandas as pd
 import re
-import random
 from solver_class import solver
 
 
@@ -69,16 +68,11 @@ def look_ahead(curr_word_list, common_words_score, round):
 
         #assuming every word could be the correct answer
         true_answer = word_list[i]
-        # print("++++++++++++++++++++++++")
-        # print("TRUE: ",  true_answer)
-        # print("++++++++++++++++++++++++")
 
         #going through the whole word list, seeing
         #how many guesses it would take to reach the 
         #"true" answer giving our methodology
         for j in range(len(word_list)):
-            # if ((j + 1) % 10 == 0):
-            #     print("Combo ", j + 1)
             new_solver = solver()
             num_guesses = 1
 
@@ -88,26 +82,19 @@ def look_ahead(curr_word_list, common_words_score, round):
 
             #how likely is it that we'd be successful
             guess = word_list[j]
-            #print("First guess", guess)
+
             og_list = word_list
 
             while (guess != true_answer):
-                # print("------------------------------------")
-                # print("Num guess", num_guesses)
-                # print("------------------------------------")
 
                 right = new_solver.determine_xyg(guess=guess, true=true_answer)
-                # print("right: ", right)
             
-
                 #parsing down the list based on previous guess, getting new best scores
-                #print("Length old list", len(og_list))
                 new_list = new_solver.adjust_list(og_list, guess, right)
-                #print("Length new list", len(new_list))
                 best_words, best_scores = new_solver.score_words(new_list, common_words_score, round + num_guesses)
+                
                 #getting the best guess using the heuristic
                 guess = best_words[0]
-                #print("New guess: ", guess)
 
                 og_list = new_list
 
@@ -115,9 +102,6 @@ def look_ahead(curr_word_list, common_words_score, round):
 
 
             total_scores[word_list[j]] += num_guesses
-            # print("***********************************")
-            # print(curr_word_list[j], ": total score, ", total_scores[curr_word_list[j]])
-            # print("***********************************")
 
     df = pd.DataFrame(data={"Word": total_scores.keys(), "Score": total_scores.values()})
 
@@ -169,7 +153,9 @@ def main():
     full_list = og_list
     print("Possible choices: " , len(og_list))
     print("Here are the top 5 starter words:")
-    print("irate terai tiare retia raine")
+    print(" 1. irate" , "\n",  "2. terai ", "\n", 
+          "3. tiare",  "\n", "4. retia", "\n", 
+          "5. raine")
 
     trys = 1
     win = ""
